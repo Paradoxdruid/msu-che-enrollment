@@ -1,6 +1,7 @@
 # msu-che-enrollment
-
 An enrollment dashboard for Metropolitan State University of Denver, Department of Chemistry &amp; Biochemistry.
+
+![GitHub](https://img.shields.io/github/license/Paradoxdruid/msu-che-enrollment?color=success)  ![LGTM Grade](https://img.shields.io/lgtm/grade/python/github/Paradoxdruid/msu-che-enrollment)  [![CodeFactor](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment/badge)](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black) 
 
 Built using [Plotly Dash](https://github.com/plotly/dash), data processed from [Ellucian Banner](https://www.ellucian.com/solutions/ellucian-banner) output.
 
