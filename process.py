@@ -10,9 +10,12 @@ from datetime import date
 
 
 # Helper Functions
-def parse_files() -> Dict[date, pd.DataFrame]:
+def parse_files(term: str) -> Dict[date, pd.DataFrame]:
     """Reads in a list of processed SWRCGSR files in .xlsx format
     and returns them as a dictionary of pandas Dataframe values with date keys.
+
+    Args:
+        term (str): term to analyze, e.g. "Spring2021"
 
     Returns:
         Dict[datetime.date,pd.DataFrame]
@@ -20,7 +23,8 @@ def parse_files() -> Dict[date, pd.DataFrame]:
 
     home = Path.cwd()
     directory = home / "count"
-    files = list(directory.rglob("Spring2021_*.xlsx"))
+    term_pattern = f"{term}_*.xlsx"
+    files = list(directory.rglob(term_pattern))
     files_dict = {f.stem.split("_")[1]: f for f in files}
     parse_dict = {}
     for key, value in files_dict.items():
@@ -31,15 +35,19 @@ def parse_files() -> Dict[date, pd.DataFrame]:
     return parse_dict
 
 
-def parse_old() -> pd.DataFrame:
+def parse_old(term: str) -> pd.DataFrame:
     """Grabs the dataframe of last years enrollment.
+
+    Args:
+        term (str): term to analyze, e.g. "Spring2020"
 
     Returns:
         pd.DataFrame: dataframe of old enrollment.
     """
     home = Path.cwd()
     directory = home / "count"
-    files = list(directory.rglob("Spring2020_*.xlsx"))
+    term_pattern = f"{term}_*.xlsx"
+    files = list(directory.rglob(term_pattern))
     files_dict = {f.stem.split("_")[1]: f for f in files}
     parse_dict = {}
     for key, value in files_dict.items():

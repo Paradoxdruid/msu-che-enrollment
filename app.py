@@ -12,6 +12,10 @@ import plotdata
 import layout
 import process
 
+# Initalize terms to process
+CURRENT_TERM = "Spring2021"
+PREVIOUS_TERM = "Spring2020"
+
 # Initialize server
 app: dash.Dash = dash.Dash(
     __name__,
@@ -20,13 +24,13 @@ app: dash.Dash = dash.Dash(
 )
 server: Any = app.server
 
-app.title = "Chemistry Enrollment Statistics"
+app.title = f"Chemistry Enrollment Statistics for {CURRENT_TERM}"
 
 
 # Run our data processing
-parse_dict = process.parse_files()
+parse_dict = process.parse_files(CURRENT_TERM)
 tester, tester3 = process.process_data(parse_dict)
-old_df = process.parse_old()
+old_df = process.parse_old(PREVIOUS_TERM)
 test_vs_old = process.process_vs_old(parse_dict, old_df)
 
 # Generate our graphs and tables
@@ -53,7 +57,7 @@ graph_dict = {
 }
 
 # Create layout with graphs
-app.layout = layout.generate_layout(graph_dict)
+app.layout = layout.generate_layout(graph_dict, CURRENT_TERM)
 
 
 # Main

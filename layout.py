@@ -8,11 +8,12 @@ import dash_bootstrap_components as dbc
 from typing import Any, Dict
 
 
-def generate_layout(graph_dict: Dict[str, Any]) -> Any:
+def generate_layout(graph_dict: Dict[str, Any], term: str) -> Any:
     """Create a dash bootstrap based website layout.
 
     Args:
         graph_dict (Dict[str, Any]: dictionary of plotly graph objects and dash tables.
+        term (str): term to analyze, e.g. "Spring2021"
 
     Returns:
         html.Div wrapping a website layout.
@@ -26,7 +27,7 @@ def generate_layout(graph_dict: Dict[str, Any]) -> Any:
 
     nav_bar = dbc.NavbarSimple(
         children=[nav_text, nav_item],
-        brand="CHE Enrollment Statistics -- Spring 2021",
+        brand=f"CHE Enrollment Statistics -- {term}",
         # brand_href="#",
         brand_style={"font-weight": "bold"},
         sticky="top",
