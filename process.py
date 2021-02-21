@@ -102,6 +102,43 @@ def process_data(
     return tester, tester3
 
 
+def process_max_old(parse_dict: Dict[date, pd.DataFrame]) -> pd.DataFrame:
+    """Helper method to find max enrollment in previous term."""
+    final_df = pd.DataFrame(columns=["Date", "Enrolled", "CRN", "Course"])
+    for key, value in parse_dict.items():
+        temp_df = value[["CRN", "Enrolled", "Course"]].copy()
+        temp_df["Date"] = key
+        final_df = pd.concat([final_df, temp_df])
+    test = pd.DataFrame(final_df.groupby(["Course", "Date"])["Enrolled"].sum())
+
+    max_test = list(parse_dict.values())[0][["Course", "Max"]]
+    max_test2 = max_test.groupby("Course")["Max"].sum()
+
+    test2 = test.reset_index().pivot(index="Course", columns="Date", values="Enrolled")
+    test3 = test2.copy()
+
+    for ix, value in test3.iteritems():
+        for ind, each in value.items():
+            beep = each / max_test2[ind]
+            test3.loc[ind, ix] = float(beep)
+
+    tester = test3[test3.columns[::-1]]
+    return tester
+
+
+def process_df_to_counts(parse_dict: Dict[date, pd.DataFrame]) -> pd.DataFrame:
+    """Helper method to process and format a df into a count of enrollment"""
+    final_df = pd.DataFrame(columns=["Date", "Enrolled", "CRN", "Course"])
+    for key, value in parse_dict.items():
+        temp_df = value[["CRN", "Enrolled", "Course"]].copy()
+        temp_df["Date"] = key
+        final_df = pd.concat([final_df, temp_df])
+    test = pd.DataFrame(final_df.groupby(["Course", "Date"])["Enrolled"].sum())
+    test2 = test.reset_index().pivot(index="Course", columns="Date", values="Enrolled")
+    tester = test2[test2.columns[::-1]]
+    return tester
+
+
 def process_vs_old(
     parse_dict: Dict[date, pd.DataFrame], old_df: pd.DataFrame
 ) -> pd.DataFrame:

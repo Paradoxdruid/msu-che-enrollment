@@ -17,13 +17,18 @@ pio.templates.default = "ggplot2"
 
 
 def generate_graphs(
-    tester: pd.DataFrame, tester3: pd.DataFrame
+    tester: pd.DataFrame,
+    tester3: pd.DataFrame,
+    old: pd.DataFrame,
+    max_old: pd.DataFrame,
 ) -> Tuple[Any, Any, Any]:
     """Create plotly objects for our graphs.
 
     Args:
         tester (pd.DataFrame): Course Data by total enrollment
         tester3 (pd.DataFrame): Course data by percentage enrollment
+        old (pd.DataFrame): Course data by total enrollment, previous term
+        max_old (pd.DataFrame): Course data by max enrollment, previous term
 
     Returns:
         Tuple[Any, Any, Any]: Plotly graph objects for:
@@ -187,13 +192,7 @@ def generate_graphs(
     our_df = tester.T
 
     for column in our_df:
-        fig4.add_trace(
-            go.Scatter(
-                x=our_df.index,
-                y=our_df[column],
-                name=column,
-            )
-        )
+        fig4.add_trace(go.Scatter(x=our_df.index, y=our_df[column], name=column,))
 
     fig4.update_yaxes(title="Enrolled")
     fig4.update_layout(
@@ -255,30 +254,92 @@ def generate_graphs(
         ]
     )
 
-    # graph 2
-    fig2 = px.bar(
-        tester,
-        color_discrete_sequence=px.colors.sequential.thermal,
-        template="ggplot2",
-        barmode="overlay",
-        title="Student total enrollment over time",
-    )
+    # # graph 2
+    # fig2 = px.bar(
+    #     tester.iloc[:, :15],
+    #     color_discrete_sequence=px.colors.sequential.Turbo_r,
+    #     template="ggplot2",
+    #     barmode="overlay",
+    #     title="Student total enrollment over time",
+    # )
+
+    # fig2.update_layout(yaxis_title="Student Count",)
+
+    # Graph 2
+    fig2 = go.Figure()
+    for i in range(15):
+        fig2.add_trace(
+            go.Bar(
+                x=tester.index,
+                y=tester.iloc[:, i],
+                name=tester.columns[i].strftime("%Y-%m-%d"),
+                marker_color=px.colors.sequential.Turbo_r[i],
+            )
+        )
+
+    for i in range(len(old.index)):
+        if old.index[i] in tester.index:
+            ind = list(tester.index).index(old.index[i])
+            fig2.add_shape(
+                type="line",
+                x0=ind - 0.4,
+                y0=old.iloc[i, 0],
+                x1=ind + 0.4,
+                y1=old.iloc[i, 0],
+                opacity=1,
+                line=dict(color="Magenta", width=3),
+            )
 
     fig2.update_layout(
+        barmode="overlay",
+        colorscale={"sequential": px.colors.sequential.Turbo_r},
+        template="ggplot2",
+        title="Student total enrollment over time",
         yaxis_title="Student Count",
     )
 
     # Graph 3
-    fig = px.bar(
-        tester3,
-        template="ggplot2",
-        barmode="overlay",
-        color_discrete_sequence=px.colors.sequential.thermal,
-        title="Percent max enrollment over time",
-    )
+    # fig = px.bar(
+    #     tester3.iloc[:, :15],
+    #     template="ggplot2",
+    #     barmode="overlay",
+    #     color_discrete_sequence=px.colors.sequential.Turbo_r,
+    #     title="Percent max enrollment over time",
+    # )
+
+    # fig.update_layout(yaxis_title="Fraction",)
+
+    # Graph 3
+    fig = go.Figure()
+    for i in range(15):
+        fig.add_trace(
+            go.Bar(
+                x=tester3.index,
+                y=tester3.iloc[:, i],
+                name=tester3.columns[i].strftime("%Y-%m-%d"),
+                marker_color=px.colors.sequential.Turbo_r[i],
+            )
+        )
+
+    for i in range(len(max_old.index)):
+        if max_old.index[i] in tester.index:
+            ind = list(tester.index).index(max_old.index[i])
+            fig.add_shape(
+                type="line",
+                x0=ind - 0.4,
+                y0=max_old.iloc[i, 0],
+                x1=ind + 0.4,
+                y1=max_old.iloc[i, 0],
+                opacity=1,
+                line=dict(color="Magenta", width=3),
+            )
 
     fig.update_layout(
-        yaxis_title="Fraction",
+        barmode="overlay",
+        colorscale={"sequential": px.colors.sequential.Turbo_r},
+        template="ggplot2",
+        title="Student total enrollment over time",
+        yaxis_title="Student Count",
     )
 
     return fig4, fig2, fig
@@ -296,10 +357,10 @@ def generate_old_graph(test_vs_old: pd.DataFrame) -> Any:
 
     # Graph 4
     fig_old = px.bar(
-        test_vs_old,
+        test_vs_old.iloc[:, :15],
         template="ggplot2",
         barmode="overlay",
-        color_discrete_sequence=px.colors.sequential.thermal,
+        color_discrete_sequence=px.colors.sequential.Turbo_r,
         title="Percent enrollment vs previous year, over time",
     )
 
@@ -313,9 +374,7 @@ def generate_old_graph(test_vs_old: pd.DataFrame) -> Any:
         line=dict(color="black", width=2, dash="dot"),
     )
 
-    fig_old.update_layout(
-        yaxis_title="Fraction",
-    )
+    fig_old.update_layout(yaxis_title="Fraction",)
 
     return fig_old
 
@@ -332,16 +391,11 @@ def generate_heatmap(tester3: pd.DataFrame) -> Any:
 
     test = tester3
     test = test.drop(["CHE3980", "CHE4370", "CHE4700", "CHE4710"])
+    test = test.iloc[::-1]
     fig_map = go.Figure()
 
     fig_map.add_trace(
-        go.Heatmap(
-            y=test.index,
-            x=test.columns,
-            z=test,
-            colorscale="viridis",
-            ygap=1,
-        )
+        go.Heatmap(y=test.index, x=test.columns, z=test, colorscale="viridis", ygap=1,)
     )
 
     fig_map.update_layout(
@@ -447,10 +501,7 @@ def create_dash_table(df):
                 [*df.columns[:6], *df.columns[7:-3]],
             )
         ],
-        style_header={
-            "backgroundColor": "rgb(230, 230, 230)",
-            "fontWeight": "bold",
-        },
+        style_header={"backgroundColor": "rgb(230, 230, 230)", "fontWeight": "bold",},
         style_cell={"font-family": "lato", "font-size": "0.6rem"},
         style_cell_conditional=[
             {
@@ -495,10 +546,7 @@ def create_dash_table(df):
         style_table={"height": "62vh", "overflowY": "auto"},
         style_data_conditional=[
             *data_bars("Ratio", "Max"),
-            {
-                "if": {"row_index": "odd"},
-                "backgroundColor": "rgb(248, 248, 248)",
-            },
+            {"if": {"row_index": "odd"}, "backgroundColor": "rgb(248, 248, 248)",},
             {
                 "if": {"filter_query": "{WList} > 0", "column_id": "WList"},
                 "backgroundColor": "#FFEB9C",
@@ -522,12 +570,7 @@ def create_dash_table(df):
                 "backgroundColor": "#008000",
                 "color": "white",
             },
-            {
-                "if": {
-                    "filter_query": "{S} contains C",
-                },
-                "backgroundColor": "#FF4136",
-            },
+            {"if": {"filter_query": "{S} contains C",}, "backgroundColor": "#FF4136",},
         ],
     )
 
@@ -549,8 +592,6 @@ def data_graph(fig_obj: Any, id_name: str) -> Any:
 
     return (
         dcc.Graph(
-            figure=fig_obj,
-            id=id_name,
-            style={"height": "65vh", "min-height": "750px"},
+            figure=fig_obj, id=id_name, style={"height": "65vh", "min-height": "750px"},
         ),
     )

@@ -31,10 +31,13 @@ app.title = f"Chemistry Enrollment Statistics for {CURRENT_TERM}"
 parse_dict = process.parse_files(CURRENT_TERM)
 tester, tester3 = process.process_data(parse_dict)
 old_df = process.parse_old(PREVIOUS_TERM)
+old1 = process.parse_files(PREVIOUS_TERM)
+older = process.process_df_to_counts(old1)
+max_old = process.process_max_old(old1)
 test_vs_old = process.process_vs_old(parse_dict, old_df)
 
 # Generate our graphs and tables
-fig4, fig2, fig = plotdata.generate_graphs(tester, tester3)
+fig4, fig2, fig = plotdata.generate_graphs(tester, tester3, older, max_old)
 fig_old = plotdata.generate_old_graph(test_vs_old)
 fig_map = plotdata.generate_heatmap(tester3)
 graph1 = plotdata.data_graph(fig4, "1")
