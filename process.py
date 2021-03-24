@@ -3,13 +3,51 @@
 """Data processing for Plotly Dash webapp to process SWRCGSR Enrollment Reports."""
 
 # Import required libraries
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 import pandas as pd
 from pathlib import Path
 from datetime import date
+import boto3
+from botocore.exceptions import ClientError
+import os
+import pickle
+
+# TERM DATA
+CURRENT_TERM = "Summer2021"
+PREVIOUS_TERM = "Summer2020"
+
+# Load s3 environment variables
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
 
 
 # Helper Functions
+def upload_s3_file(file_name: str, bucket: str, object_name: Optional[str] = None):
+    """Upload a file to an S3 bucket
+
+    Args:
+        filename (str): File to upload
+        bucket (str): Bucket to upload to
+        object_name (str): S3 object name. If not specified then file_name is used
+
+    Returns:
+        bool: True if file was uploaded, else False
+    """
+
+    # If S3 object_name was not specified, use file_name
+    if object_name is None:
+        object_name = file_name
+
+    # Upload the file
+    s3_client = boto3.client("s3")
+    try:
+        _ = s3_client.upload_file(file_name, bucket, object_name)
+    except ClientError:
+        return False
+    return True
+
+
 def parse_files(term: str) -> Dict[date, pd.DataFrame]:
     """Reads in a list of processed SWRCGSR files in .xlsx format
     and returns them as a dictionary of pandas Dataframe values with date keys.
@@ -85,7 +123,7 @@ def process_data(
     test = final_df.groupby(["Course", "Date"])["Enrolled"].sum()
     test = pd.DataFrame(test)
 
-    max_test = parse_dict[date(2020, 11, 30)][["Course", "Max"]]
+    max_test = parse_dict[date(2021, 2, 25)][["Course", "Max"]]
     max_test2 = max_test.groupby("Course")["Max"].sum()
 
     test2 = test.reset_index().pivot(index="Course", columns="Date", values="Enrolled")
@@ -183,3 +221,30 @@ def process_vs_old(
     test_vs_old = test3[test3.columns[::-1]]
 
     return test_vs_old
+
+
+def prepare_s3_pickle(filename: str = "data.pickle") -> None:
+    parse_dict = parse_files(CURRENT_TERM)
+    tester, tester3 = process_data(parse_dict)
+    old_df = parse_old(PREVIOUS_TERM)
+    old1 = parse_files(PREVIOUS_TERM)
+    older = process_df_to_counts(old1)
+    max_old = process_max_old(old1)
+    test_vs_old = process_vs_old(parse_dict, old_df)
+
+    data_dict = {
+        "parse_dict": parse_dict,
+        "tester": tester,
+        "tester3": tester3,
+        "old_df": old_df,
+        "old1": old1,
+        "older": older,
+        "max_old": max_old,
+        "test_vs_old": test_vs_old,
+    }
+    pickle.dump(data_dict, open(filename, "wb"))
+
+
+if __name__ == "__main__":
+    prepare_s3_pickle()
+    upload_s3_file("data.pickle", AWS_BUCKET_NAME)
