@@ -6,15 +6,19 @@
 import dash
 from typing import Any
 import dash_bootstrap_components as dbc
+import os
+import boto3
+import pickle
 
 # Module imports
 import plotdata
 import layout
-import process
+
+# import process
 
 # Initalize terms to process
-CURRENT_TERM = "Spring2021"
-PREVIOUS_TERM = "Spring2020"
+CURRENT_TERM = "Summer2021"
+PREVIOUS_TERM = "Summer2020"
 
 # Initialize server
 app: dash.Dash = dash.Dash(
@@ -26,15 +30,40 @@ server: Any = app.server
 
 app.title = f"Chemistry Enrollment Statistics for {CURRENT_TERM}"
 
+# Load s3 environment variables
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET_NAME = os.environ.get("AWS_BUCKET_NAME")
+
+
+# Helper Functions
+def get_s3_data(object_name: str = "data.pickle"):
+    """Retrieve latest enrollment data from Amazon s3 bucket
+       and copy to Heroku local filesystem.
+
+    Returns:
+        Dict[datetime.date,pd.DataFrame]
+    """
+
+    s3_client = boto3.client("s3")
+    s3_client.download_file(AWS_BUCKET_NAME, object_name, object_name)
+
+    with open(object_name, "rb") as in_file:
+        process_dict = pickle.load(in_file)
+    return process_dict
+
 
 # Run our data processing
-parse_dict = process.parse_files(CURRENT_TERM)
-tester, tester3 = process.process_data(parse_dict)
-old_df = process.parse_old(PREVIOUS_TERM)
-old1 = process.parse_files(PREVIOUS_TERM)
-older = process.process_df_to_counts(old1)
-max_old = process.process_max_old(old1)
-test_vs_old = process.process_vs_old(parse_dict, old_df)
+process_dict = get_s3_data()
+parse_dict = process_dict["parse_dict"]
+tester = process_dict["tester"]
+tester3 = process_dict["tester3"]
+old_df = process_dict["old_df"]
+old1 = process_dict["old1"]
+older = process_dict["older"]
+max_old = process_dict["max_old"]
+test_vs_old = process_dict["test_vs_old"]
+
 
 # Generate our graphs and tables
 fig4, fig2, fig = plotdata.generate_graphs(tester, tester3, older, max_old)
