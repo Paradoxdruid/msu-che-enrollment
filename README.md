@@ -1,5 +1,5 @@
 # msu-che-enrollment
-![GitHub](https://img.shields.io/github/license/Paradoxdruid/msu-che-enrollment?color=success)  ![LGTM Grade](https://img.shields.io/lgtm/grade/python/github/Paradoxdruid/msu-che-enrollment)  [![CodeFactor](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment/badge)](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black) 
+[![CodeFactor](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment/badge)](https://www.codefactor.io/repository/github/paradoxdruid/msu-che-enrollment) [![CodeQL](https://github.com/Paradoxdruid/msu-che-enrollment/actions/workflows/codeql.yml/badge.svg)](https://github.com/Paradoxdruid/msu-che-enrollment/actions/workflows/codeql.yml) ![GitHub](https://img.shields.io/github/license/Paradoxdruid/msu-che-enrollment?color=success) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black) 
 
 <p align="right">
   ⭐ &nbsp;&nbsp;the project to show your appreciation. :arrow_upper_right:
